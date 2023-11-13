@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"hichoma.chat.dev/internal/handlers"
+	middlewareFc "hichoma.chat.dev/internal/middleware"
 )
 
 func InitializeServer() {
@@ -14,6 +15,8 @@ func InitializeServer() {
 		AllowOrigins: []string{"*"},
 	}))
 	app.POST("/register", handlers.Register)
-	app.GET("/ws", handlers.WSEndpoint)
+	protectedRoutes := app.Group("/")
+	protectedRoutes.Use(middlewareFc.Authentificate)
+	protectedRoutes.GET("/ws", handlers.WSEndpoint)
 	app.Logger.Fatal(app.Start(":5000"))
 }
