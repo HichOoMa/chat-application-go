@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
-	socketio "github.com/googollee/go-socket.io"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 )
 
-var wsConnections = make(map[string]socketio.Conn)
+var wsConnections = make(map[string]websocket.Conn)
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -38,6 +37,6 @@ func WSEndpoint(c echo.Context) error {
 			return err
 		}
 		response := fmt.Sprintf("Hello %s\n", msg)
-		err = ws.WriteMessage(websocket.TextMessage, []byte(response))
+		ws.WriteMessage(websocket.TextMessage, []byte(response))
 	}
 }
