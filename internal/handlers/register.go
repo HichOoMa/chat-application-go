@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -20,8 +21,8 @@ func Register(c echo.Context) error {
 
 	// parse request into struct
 	err := json.NewDecoder(c.Request().Body).Decode(&userFrom)
-	if err != nil || userFrom.Name == "" || userFrom.Email == "" || userFrom.Password == "" || userFrom.Phone == 0 {
-		return c.String(http.StatusBadRequest, "bad request")
+	if err != nil || userFrom.Username == "" || userFrom.Email == "" || userFrom.Password == "" {
+		return c.String(http.StatusBadRequest, "bad request from client")
 	}
 
 	// verif if user existance
@@ -33,15 +34,15 @@ func Register(c echo.Context) error {
 
 	// create user collection
 	newUser := models.User{
-		Name:  userFrom.Name,
+		Name:  userFrom.Username,
 		Email: userFrom.Email,
-		Phone: userFrom.Phone,
 	}
 	newUser.HashPassword(userFrom.Password)
 
 	// create user in database
 	userID, err := database.CreateCollection("users", newUser)
 	if err != nil || userID == "" {
+		fmt.Println(err)
 		return c.JSON(http.StatusConflict, "can't create user")
 	}
 
