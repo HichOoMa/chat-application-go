@@ -8,17 +8,16 @@ import (
 )
 
 type UserSignUpForm struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Phone    int    `json:"phone"`
-	Password string `json:"password"`
+	Username        string `json:"username" bson:"username"`
+	Email           string `json:"email" bson:"email"`
+	Password        string `json:"password" bson:"password"`
+	ConfirmPassword string `json:"passwordConfirm" bson:"passwordConfirm"`
 }
 
 type User struct {
 	ID             primitive.ObjectID `json:"_id" bson:"_id"`
 	Name           string             `json:"name" bson:"name"`
 	Email          string             `json:"email" bson:"email"`
-	Phone          int                `json:"phone" bson:"phone"`
 	HashedPassword string             `json:"hashedPassword" bson:"hashedPassword"`
 }
 
