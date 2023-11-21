@@ -3,8 +3,8 @@ package server
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"hichoma.chat.dev/internal/handlers"
-	middlewareFc "hichoma.chat.dev/internal/middleware"
+	"hichoma.chat.dev/api/handlers"
+	middlewareFc "hichoma.chat.dev/api/middleware"
 )
 
 func InitializeServer() {
