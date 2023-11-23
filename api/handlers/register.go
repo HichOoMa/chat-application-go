@@ -12,24 +12,20 @@ import (
 	"hichoma.chat.dev/pkg/jwt"
 )
 
-type tokenResponse struct {
-	Token string `json:"token"`
-}
-
-func Register(c echo.Context) error {
+func Register(ctx echo.Context) error {
 	userFrom := new(models.UserSignUpForm)
 
-	// parse request into struct
-	err := json.NewDecoder(c.Request().Body).Decode(&userFrom)
+	// parse request into object
+	err := json.NewDecoder(ctx.Request().Body).Decode(&userFrom)
 	if err != nil || userFrom.Username == "" || userFrom.Email == "" || userFrom.Password == "" {
-		return c.String(http.StatusBadRequest, "bad request from client")
+		return ctx.String(http.StatusBadRequest, "bad request")
 	}
 
 	// verif if user existance
 	userTest := new(models.User)
 	database.FindCollection("users", bson.M{"email": userFrom.Email}, &userTest)
 	if userTest.Email == userFrom.Email {
-		return c.JSON(http.StatusConflict, "email already exist")
+		return ctx.JSON(http.StatusConflict, "email already exist")
 	}
 
 	// create user collection
@@ -43,15 +39,15 @@ func Register(c echo.Context) error {
 	userID, err := database.CreateCollection("users", newUser)
 	if err != nil || userID == "" {
 		fmt.Println(err)
-		return c.JSON(http.StatusConflict, "can't create user")
+		return ctx.JSON(http.StatusConflict, "can't create user")
 	}
 
 	// generate token for user
 	token, err := jwt.GenerateToken(userID, newUser.Email, newUser.HashedPassword)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "generate token failed")
+		return ctx.String(http.StatusInternalServerError, "generate token failed")
 	}
 	// parse token
-	tokenObject := tokenResponse{Token: token}
-	return c.JSON(http.StatusAccepted, tokenObject)
+	tokenObject := models.TokenResponse{Token: token}
+	return ctx.JSON(http.StatusAccepted, tokenObject)
 }
