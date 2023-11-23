@@ -8,10 +8,18 @@ import (
 )
 
 type UserSignUpForm struct {
-	Username        string `json:"username" bson:"username"`
-	Email           string `json:"email" bson:"email"`
-	Password        string `json:"password" bson:"password"`
-	ConfirmPassword string `json:"passwordConfirm" bson:"passwordConfirm"`
+	Username string `json:"username" bson:"username"`
+	Email    string `json:"email" bson:"email"`
+	Password string `json:"password" bson:"password"`
+}
+
+type UserLoginForm struct {
+	Email    string `json:"email" bson:"email"`
+	Password string `json:"password" bson:"password"`
+}
+
+type TokenResponse struct {
+	Token string `json:"token"`
 }
 
 type User struct {
