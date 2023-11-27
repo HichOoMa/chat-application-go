@@ -10,27 +10,32 @@ import (
 )
 
 func Authentificate(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		if err := next(c); err != nil {
-			c.Error(err)
+	return func(ctx echo.Context) error {
+		if err := next(ctx); err != nil {
+			ctx.Error(err)
 		}
-		token := c.Request().Header.Values("token")
+
+		token := ctx.Request().Header.Values("token")
 		if token == nil {
-			c.String(http.StatusUnauthorized, "unauthorized")
+			ctx.String(http.StatusUnauthorized, "unauthorized")
 		}
+
 		claims, err := jwt.PasreToken(strings.Join(token, ""))
 		if err != nil {
-			c.Error(err)
+			ctx.String(http.StatusUnauthorized, "unauthorized")
 		}
+
 		err = claims.StandardClaims.Valid()
 		if err != nil {
-			c.Error(err)
+			ctx.String(http.StatusUnauthorized, "unauthorized")
 		}
+
 		isValid := claims.StandardClaims.VerifyExpiresAt(time.Now().Unix(), true)
 		if !isValid {
-			c.String(http.StatusUnauthorized, "unauthorized")
+			ctx.String(http.StatusUnauthorized, "unauthorized")
 		}
-		c.Request().Header.Set("user", claims.UserID)
-		return next(c)
+
+		ctx.Request().Header.Set("user", claims.UserID)
+		return next(ctx)
 	}
 }
