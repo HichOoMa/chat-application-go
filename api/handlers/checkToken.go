@@ -9,9 +9,6 @@ import (
 	"hichoma.chat.dev/pkg/jwt"
 )
 
-type checkTokenForm struct {
-}
-
 func CheckToken(ctx echo.Context) error {
 	token := ctx.Request().Header.Values("token")
 	if token == nil {
