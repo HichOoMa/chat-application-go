@@ -8,8 +8,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var wsConnections = make(map[string]websocket.Conn)
-
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
