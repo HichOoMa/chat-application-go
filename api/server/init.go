@@ -1,17 +1,16 @@
 package server
 
 import (
-	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"hichoma.chat.dev/api/handlers"
 	middlewareFc "hichoma.chat.dev/api/middleware"
 )
 
-var WSConnections = make(map[string]websocket.Conn)
-
 func InitializeServer() {
 	app := echo.New()
+
+	server := StartWS()
 
 	app.Use(middleware.Logger())
 	app.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -23,7 +22,7 @@ func InitializeServer() {
 
 	protectedRoutes := app.Group("/")
 	protectedRoutes.Use(middlewareFc.Authentificate)
-	protectedRoutes.GET("/ws", handlers.WSEndpoint)
+	protectedRoutes.GET("/ws", server.WSEndpoint)
 
 	app.Logger.Fatal(app.Start(":5000"))
 }
