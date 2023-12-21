@@ -1,13 +1,15 @@
 package server
 
 import (
-	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"sync"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
+
+	"hichoma.chat.dev/internal/models"
 )
 
 type Client struct {
@@ -38,30 +40,45 @@ func (server *WSServer) WSEndpoint(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	client := server.joinClient(ws)
+	client := server.joinClient(ws, ctx)
 	defer server.disconnect(client)
 
 	for {
-		// Write
-		err := ws.WriteMessage(websocket.TextMessage, []byte("Hello, Client!"))
+		// // Write
+		// err := ws.WriteMessage(websocket.TextMessage, []byte("Hello, Client!"))
+		// if err != nil {
+		// 	ctx.Logger().Error(err)
+		// }
+		//
+		// // Read
+		// _, msg, err := ws.ReadMessage()
+		// if err != nil {
+		// 	ctx.Logger().Error(err)
+		// 	return err
+		// }
+		// response := fmt.Sprintf("Hello %s\n", msg)
+		// ws.WriteMessage(websocket.TextMessage, []byte(response))
+		msg := models.WsMessage{}
+		err := ws.ReadJSON(&msg)
 		if err != nil {
-			ctx.Logger().Error(err)
+			if err == io.EOF {
+				break
+			}
+			ctx.Logger().Error("message structure not valid")
 		}
 
-		// Read
-		_, msg, err := ws.ReadMessage()
+		err = server.sendMessage(&msg, ctx)
 		if err != nil {
-			ctx.Logger().Error(err)
-			return err
+			ctx.Logger().Error("message sent successfully")
 		}
-		response := fmt.Sprintf("Hello %s\n", msg)
-		ws.WriteMessage(websocket.TextMessage, []byte(response))
 	}
+	return nil
 }
 
-func (server *WSServer) joinClient(ws *websocket.Conn) *Client {
+func (server *WSServer) joinClient(ws *websocket.Conn, ctx echo.Context) *Client {
+	userId := ctx.Request().Header.Values("user")
 	client := Client{
-		ID:   uuid.Must(uuid.NewRandom()).String(),
+		ID:   strings.Join(userId, ""),
 		Conn: ws,
 		Msg:  make(chan []byte),
 	}
@@ -76,4 +93,17 @@ func (server *WSServer) joinClient(ws *websocket.Conn) *Client {
 func (server *WSServer) disconnect(client *Client) {
 	defer client.Conn.Close()
 	delete(server.Conns, client.ID)
+}
+
+func (server *WSServer) sendMessage(msg *models.WsMessage, ctx echo.Context) error {
+	receivedId := msg.OppositeId
+	receiverWs := server.Conns[receivedId].Conn
+	senderId := strings.Join(ctx.Request().Header.Values("user"), "")
+
+	msg.OppositeId = senderId
+	err := receiverWs.WriteJSON(msg)
+	if err != nil {
+		return err
+	}
+	return nil
 }
