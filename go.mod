@@ -14,7 +14,6 @@ require (
 require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/google/uuid v1.4.0
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
