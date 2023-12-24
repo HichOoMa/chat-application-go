@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 
+	"hichoma.chat.dev/api/handlers"
 	"hichoma.chat.dev/internal/models"
 )
 
@@ -44,20 +45,6 @@ func (server *WSServer) WSEndpoint(ctx echo.Context) error {
 	defer server.disconnect(client)
 
 	for {
-		// // Write
-		// err := ws.WriteMessage(websocket.TextMessage, []byte("Hello, Client!"))
-		// if err != nil {
-		// 	ctx.Logger().Error(err)
-		// }
-		//
-		// // Read
-		// _, msg, err := ws.ReadMessage()
-		// if err != nil {
-		// 	ctx.Logger().Error(err)
-		// 	return err
-		// }
-		// response := fmt.Sprintf("Hello %s\n", msg)
-		// ws.WriteMessage(websocket.TextMessage, []byte(response))
 		msg := models.WsMessage{}
 		err := ws.ReadJSON(&msg)
 		if err != nil {
@@ -69,7 +56,7 @@ func (server *WSServer) WSEndpoint(ctx echo.Context) error {
 
 		err = server.sendMessage(&msg, ctx)
 		if err != nil {
-			ctx.Logger().Error("message sent successfully")
+			ctx.Logger().Error("message sent failed")
 		}
 	}
 	return nil
@@ -98,10 +85,9 @@ func (server *WSServer) disconnect(client *Client) {
 func (server *WSServer) sendMessage(msg *models.WsMessage, ctx echo.Context) error {
 	receivedId := msg.OppositeId
 	receiverWs := server.Conns[receivedId].Conn
-	senderId := strings.Join(ctx.Request().Header.Values("user"), "")
 
-	msg.OppositeId = senderId
-	err := receiverWs.WriteJSON(msg)
+	msgResponse := handlers.AddNewMessage(msg, ctx)
+	err := receiverWs.WriteJSON(msgResponse)
 	if err != nil {
 		return err
 	}
