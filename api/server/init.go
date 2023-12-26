@@ -26,7 +26,7 @@ func InitializeServer() {
 	protectedRoutes := app.Group("")
 	protectedRoutes.Use(middlewareFc.Authentificate)
 	protectedRoutes.GET("/ws", server.WSEndpoint)
-	protectedRoutes.GET("/auth", func(c echo.Context) error { return c.String(200, "valid") })
+	protectedRoutes.GET("/messages/:friend", handlers.GetUserChat)
 
 	app.Logger.Fatal(app.Start(":5000"))
 }
