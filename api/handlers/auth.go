@@ -2,13 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"hichoma.chat.dev/internal/database"
 	"hichoma.chat.dev/internal/models"
@@ -33,6 +32,7 @@ func Register(ctx echo.Context) error {
 
 	// create user collection
 	newUser := models.User{
+		ID:    primitive.NewObjectID(),
 		Name:  userFrom.Username,
 		Email: userFrom.Email,
 	}
@@ -41,7 +41,6 @@ func Register(ctx echo.Context) error {
 	// create user in database
 	userID, err := database.CreateCollection("users", newUser)
 	if err != nil || userID == "" {
-		fmt.Println(err)
 		return ctx.JSON(http.StatusConflict, "can't create user")
 	}
 
@@ -86,24 +85,24 @@ func Login(ctx echo.Context) error {
 }
 
 func CheckToken(ctx echo.Context) error {
-	token := ctx.Request().Header.Values("token")
-	if token == nil {
-		ctx.String(http.StatusUnauthorized, "unauthorized")
+	token := ctx.QueryParams().Get("token")
+	if token == "" {
+		return echo.ErrUnauthorized
 	}
 
-	claims, err := jwt.PasreToken(strings.Join(token, ""))
+	claims, err := jwt.PasreToken(token)
 	if err != nil {
-		ctx.String(http.StatusUnauthorized, "unauthorized")
+		return echo.ErrUnauthorized
 	}
 
 	err = claims.StandardClaims.Valid()
 	if err != nil {
-		ctx.String(http.StatusUnauthorized, "unauthorized")
+		return echo.ErrUnauthorized
 	}
 
 	isValid := claims.StandardClaims.VerifyExpiresAt(time.Now().Unix(), true)
 	if !isValid {
-		ctx.String(http.StatusUnauthorized, "unauthorized")
+		return echo.ErrUnauthorized
 	}
 
 	return ctx.String(http.StatusNoContent, "")
