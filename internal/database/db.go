@@ -47,13 +47,30 @@ Usage :
 
 	user := User{}
 	filter := bson.M{"name": "test"}
-	ReadCollection("users" ,filter ,&user)
+	FindOneCollection("users" ,filter ,&user)
 */
-func FindCollection(collectionName string, filter interface{}, result interface{}) error {
+func FindOneCollection(collectionName string, filter interface{}, result interface{}) error {
 	collection := db.Collection(collectionName)
 
 	err := collection.FindOne(context.Background(), filter).Decode(result)
 	return err
+}
+
+/*
+Usage :
+
+	filter := bson.M{"name": "test"}
+	users, err := FindCollection("users" ,filter)
+*/
+
+func FindCollection(collectionName string, filter interface{}) (*mongo.Cursor, error) {
+	collection := db.Collection(collectionName)
+
+	result, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 /*
