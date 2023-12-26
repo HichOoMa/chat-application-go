@@ -11,10 +11,6 @@ import (
 
 func Authentificate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		if err := next(ctx); err != nil {
-			ctx.Error(err)
-		}
-
 		token := ctx.Request().Header.Values("token")
 		if token == nil {
 			return echo.ErrUnauthorized
