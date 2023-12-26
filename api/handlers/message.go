@@ -37,15 +37,47 @@ func AddNewMessage(message *models.WsMessage, ctx echo.Context) *models.Message 
 	return &msg
 }
 
-func GetUserMessages(ctx echo.Context) error {
+func GetUserChat(ctx echo.Context) error {
 	userId := strings.Join(ctx.Request().Header.Values("user"), "")
-	filter := bson.A{"$or", bson.A{bson.M{"sender_id": userId}, bson.M{"receiver_id": userId}}}
+	chatFriendId := ctx.Param("friend")
 
-	result := []models.Message{}
-	err := database.FindCollection("messages", filter, &result)
+	filter := bson.D{{
+		Key: "$and",
+		Value: bson.A{
+			bson.D{{
+				Key: "sender_id",
+				Value: bson.D{{
+					Key: "$in",
+					Value: bson.A{
+						userId,
+						chatFriendId,
+					},
+				}},
+			}},
+			bson.D{{
+				Key: "receiver_id",
+				Value: bson.D{{
+					Key: "$in",
+					Value: bson.A{
+						userId,
+						chatFriendId,
+					},
+				}},
+			}},
+		},
+	}}
+
+	response := []models.Message{}
+	result, err := database.FindCollection("messages", filter)
 	if err != nil {
-		return ctx.JSON(http.StatusAccepted, bson.M{})
+		return ctx.JSON(http.StatusNoContent, bson.M{})
 	}
 
-	return ctx.JSON(http.StatusOK, result)
+	for result.Next(ctx.Request().Context()) {
+		var message models.Message
+		result.Decode(&message)
+		response = append(response, message)
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }
