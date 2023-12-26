@@ -27,6 +27,7 @@ func InitializeServer() {
 	protectedRoutes.Use(middlewareFc.Authentificate)
 	protectedRoutes.GET("/ws", server.WSEndpoint)
 	protectedRoutes.GET("/messages/:friend", handlers.GetUserChat)
+	protectedRoutes.POST("/friends", handlers.AddUserFriend)
 
 	app.Logger.Fatal(app.Start(":5000"))
 }
