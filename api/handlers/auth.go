@@ -25,7 +25,7 @@ func Register(ctx echo.Context) error {
 
 	// verif if user existance
 	userTest := new(models.User)
-	database.FindCollection("users", bson.M{"email": userFrom.Email}, &userTest)
+	database.FindOneCollection("users", bson.M{"email": userFrom.Email}, &userTest)
 	if userTest.Email == userFrom.Email {
 		return ctx.JSON(http.StatusConflict, "email already exist")
 	}
@@ -66,7 +66,7 @@ func Login(ctx echo.Context) error {
 	// verify credentials
 	// verify email exist
 	user := new(models.User)
-	database.FindCollection("users", bson.M{"email": loginForm.Email}, &user)
+	database.FindOneCollection("users", bson.M{"email": loginForm.Email}, &user)
 	if user == new(models.User) {
 		return ctx.String(http.StatusBadRequest, "user doesn't exist")
 	}
