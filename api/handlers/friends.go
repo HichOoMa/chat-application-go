@@ -48,14 +48,14 @@ func AddUserFriend(ctx echo.Context) error {
 	return ctx.String(http.StatusNoContent, "")
 }
 
-func getUserFriendList(ctx echo.Context) error {
+func GetUserFriendList(ctx echo.Context) error {
 	userId := strings.Join(ctx.Request().Header.Values("user"), "")
-
+	userIdObj, err := primitive.ObjectIDFromHex(userId)
 	user := models.User{}
-	filter := bson.M{"_id": userId}
-	err := database.FindOneCollection("users", filter, &user)
+	filter := bson.M{"_id": userIdObj}
+	err = database.FindOneCollection("users", filter, &user)
 	if err != nil {
 		return ctx.String(http.StatusConflict, "user collection not found")
 	}
-	return nil
+	return ctx.JSON(http.StatusOK, user.Friends)
 }
