@@ -16,6 +16,8 @@ type friendReq struct {
 	ID string `json:"_id"`
 }
 
+// TODO : Add user friend request
+// add friend to the both users
 func AddUserFriend(ctx echo.Context) error {
 	userId := strings.Join(ctx.Request().Header.Values("user"), "")
 
@@ -48,6 +50,7 @@ func AddUserFriend(ctx echo.Context) error {
 	return ctx.String(http.StatusNoContent, "")
 }
 
+// TODO : add online & pdp fields in response
 func GetUserFriendList(ctx echo.Context) error {
 	userId := strings.Join(ctx.Request().Header.Values("user"), "")
 	userIdObj, err := primitive.ObjectIDFromHex(userId)

@@ -18,10 +18,6 @@ type UserLoginForm struct {
 	Password string `json:"password" bson:"password"`
 }
 
-type TokenResponse struct {
-	Token string `json:"token"`
-}
-
 type Friend struct {
 	ID   primitive.ObjectID `json:"_id"  bson:"_id"`
 	Name string             `json:"name" bson:"name"`

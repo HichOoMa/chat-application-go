@@ -14,6 +14,12 @@ import (
 	"hichoma.chat.dev/pkg/jwt"
 )
 
+type authResponse struct {
+	UserID   string `json:"user_id"`
+	Username string `json:"username"`
+	Token    string `json:"token"`
+}
+
 func Register(ctx echo.Context) error {
 	userFrom := new(models.UserSignUpForm)
 
@@ -50,7 +56,7 @@ func Register(ctx echo.Context) error {
 		return ctx.String(http.StatusInternalServerError, "generate token failed")
 	}
 	// parse token
-	tokenObject := models.TokenResponse{Token: token}
+	tokenObject := authResponse{UserID: userID, Username: newUser.Name, Token: token}
 	return ctx.JSON(http.StatusAccepted, tokenObject)
 }
 
@@ -77,7 +83,7 @@ func Login(ctx echo.Context) error {
 		if err != nil {
 			return ctx.String(http.StatusInternalServerError, "generate token failed")
 		}
-		tokenObject := models.TokenResponse{Token: token}
+		tokenObject := authResponse{UserID: user.ID.Hex(), Username: user.Name, Token: token}
 		return ctx.JSON(http.StatusAccepted, tokenObject)
 	} else {
 		return ctx.JSON(http.StatusUnauthorized, "credential doesn't match")
