@@ -1,7 +1,6 @@
 package server
 
 import (
-	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -48,10 +47,8 @@ func (server *WSServer) WSEndpoint(ctx echo.Context) error {
 		msg := models.WsMessage{}
 		err := ws.ReadJSON(&msg)
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			ctx.Logger().Error("message structure not valid")
+			ctx.Logger().Error(err.Error())
+			break
 		}
 
 		err = server.sendMessage(&msg, ctx)
@@ -83,13 +80,17 @@ func (server *WSServer) disconnect(client *Client) {
 }
 
 func (server *WSServer) sendMessage(msg *models.WsMessage, ctx echo.Context) error {
-	receivedId := msg.OppositeId
-	receiverWs := server.Conns[receivedId].Conn
-
 	msgResponse := handlers.AddNewMessage(msg, ctx)
-	err := receiverWs.WriteJSON(msgResponse)
-	if err != nil {
-		return err
+	server.Conns[msgResponse.SenderID].Conn.WriteJSON(msgResponse)
+
+	if receiverClient, ok := server.Conns[msgResponse.ReceiverID]; ok {
+
+		err := receiverClient.Conn.WriteJSON(msgResponse)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		return nil
 	}
-	return nil
 }
