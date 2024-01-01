@@ -23,9 +23,12 @@ func InitializeServer() {
 	app.POST("/login", handlers.Login)
 	app.GET("/checkToken", handlers.CheckToken)
 
+	wsProtectedRoutes := app.Group("")
+	wsProtectedRoutes.Use(middlewareFc.WsAuthentificate)
+	wsProtectedRoutes.GET("/ws", server.WSEndpoint)
+
 	protectedRoutes := app.Group("")
 	protectedRoutes.Use(middlewareFc.Authentificate)
-	protectedRoutes.GET("/ws", server.WSEndpoint)
 	protectedRoutes.GET("/messages/:friend", handlers.GetUserChat)
 	protectedRoutes.POST("/friends", handlers.AddUserFriend)
 	protectedRoutes.GET("/friends", handlers.GetUserFriendList)
