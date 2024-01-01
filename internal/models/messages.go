@@ -20,6 +20,13 @@ type Reactions struct {
 }
 
 type WsMessage struct {
-	OppositeId string `json:"opposite_id" bson:"opposite_id"`
-	Content    string `json:"content"     bson:"content"`
+	FriendId string `json:"friend_id" bson:"friend_id"`
+	Content  string `json:"content"   bson:"content"`
+}
+
+func (msg *Message) Validate() bool {
+	if msg.ID == primitive.NilObjectID || msg.ReceiverID == "" || msg.SenderID == "" || msg.Content == "" || msg.Date == "" {
+		return false
+	}
+	return true
 }

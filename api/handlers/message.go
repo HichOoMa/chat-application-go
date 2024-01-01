@@ -21,12 +21,14 @@ func AddNewMessage(message *models.WsMessage, ctx echo.Context) *models.Message 
 	msg := models.Message{
 		ID:         primitive.NewObjectID(),
 		SenderID:   userId,
-		ReceiverID: message.OppositeId,
+		ReceiverID: message.FriendId,
 		Content:    message.Content,
 		Date:       date,
 		Reactions:  emptyReaction,
 	}
-
+	if !msg.Validate() {
+		return nil
+	}
 	messageId, err := database.CreateCollection("messages", &msg)
 	if err != nil {
 		return nil
